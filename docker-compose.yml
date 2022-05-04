@@ -6,10 +6,28 @@ services:
     build:
       context: .
       dockerfile: FrontEnd/Dockerfile
+    ports:
+      - "51000:50001"
+  frontend-dapr:
+    image: "daprio/daprd:1.7.2"
+    command: ["./daprd","-app-id","FrontEnd","-app-port","80"]
+    depends_on:
+      - frontend
+    network_mode: "service:frontend"
+
 
   backend:
     image: ${DOCKER_REGISTRY-}backend
     build:
       context: .
       dockerfile: BackEnd/Dockerfile
+    ports:
+      - "51002:50001"
+  
+  backend-dapr:
+    image: "daprio/daprd:1.7.2"
+    command: ["./daprd","-app-id","BackEnd","-app-port","80"]
+    depends_on:
+      - backend
+    network_mode: "service:backend"
 
