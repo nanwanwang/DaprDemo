@@ -6,9 +6,6 @@ metadata:
   labels:
     app: gateway
     version: v1
-  annotations:
-    deployment.kubernetes.io/revision: '1'
-    kubesphere.io/creator: dev-demon
 spec:
   replicas: 1
   selector:
@@ -29,7 +26,7 @@ spec:
             type: ''
       containers:
         - name: container-86izld
-          image: 'registry.cn-guangzhou.aliyuncs.com/nanwanwang/gateway:latest'
+          image: $REGISTRY/$DOCKERHUB_NAMESPACE/$GATEWAY_NAME:latest
           ports:
             - name: tcp-80
               containerPort: 80
