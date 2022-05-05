@@ -6,6 +6,9 @@ metadata:
   labels:
     app: frontend
     version: v1
+  annotations:
+    deployment.kubernetes.io/revision: '1'
+    kubesphere.io/creator: dev-demon
 spec:
   replicas: 1
   selector:
@@ -14,7 +17,6 @@ spec:
       version: v1
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: frontend
         version: v1
