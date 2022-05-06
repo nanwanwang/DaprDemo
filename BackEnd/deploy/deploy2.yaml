@@ -1,24 +1,24 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: backend-v1
+  name: backend2-v1
   namespace: scada
   labels:
-    app: backend
+    app: backend2
     version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend
+      app: backend2
       version: v1
   template:
     metadata:
       labels:
-        app: backend
+        app: backend2
         version: v1
       annotations:
-        dapr.io/app-id: backend
+        dapr.io/app-id: backend2
         dapr.io/app-port: '80'
         dapr.io/enable-api-logging: 'true'
         dapr.io/enabled: 'true'
@@ -29,12 +29,15 @@ spec:
             path: /etc/localtime
             type: ''
       containers:
-        - name: container-oxm2c1
+        - name: backend2
           image: $REGISTRY/$DOCKERHUB_NAMESPACE/$BACKEND_NAME:latest
           ports:
             - name: tcp-80
               containerPort: 80
               protocol: TCP
+          env:
+            - name: APP_NAME
+              value: backend2
           resources: {}
           volumeMounts:
             - name: host-time
