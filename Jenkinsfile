@@ -73,25 +73,27 @@ pipeline {
           agent none
           steps {
             container('base') {
-                withCredentials([usernamePassword(credentialsId : 'aliyun' ,usernameVariable : 'DOCKER_USER_VAR' ,passwordVariable : 'DOCKER_PWD_VAR' ,)]) {
+              withCredentials([usernamePassword(credentialsId : 'aliyun' ,usernameVariable : 'DOCKER_USER_VAR' ,passwordVariable : 'DOCKER_PWD_VAR' ,)]) {
                 sh 'echo "$DOCKER_PWD_VAR" | docker login $REGISTRY -u "$DOCKER_USER_VAR" --password-stdin'
                 sh 'docker tag  frontend:latest  $REGISTRY/$DOCKERHUB_NAMESPACE/$FRONTEND_NAME:latest'
                 sh 'docker push $REGISTRY/$DOCKERHUB_NAMESPACE/$FRONTEND_NAME:latest '
               }
+
             }
 
           }
         }
 
-         stage('推送gateway镜像') {
+        stage('推送gateway镜像') {
           agent none
           steps {
             container('base') {
-                withCredentials([usernamePassword(credentialsId : 'aliyun' ,usernameVariable : 'DOCKER_USER_VAR' ,passwordVariable : 'DOCKER_PWD_VAR' ,)]) {
+              withCredentials([usernamePassword(credentialsId : 'aliyun' ,usernameVariable : 'DOCKER_USER_VAR' ,passwordVariable : 'DOCKER_PWD_VAR' ,)]) {
                 sh 'echo "$DOCKER_PWD_VAR" | docker login $REGISTRY -u "$DOCKER_USER_VAR" --password-stdin'
                 sh 'docker tag  gateway:latest  $REGISTRY/$DOCKERHUB_NAMESPACE/$GATEWAY_NAME:latest'
                 sh 'docker push $REGISTRY/$DOCKERHUB_NAMESPACE/$GATEWAY_NAME:latest '
               }
+
             }
 
           }
@@ -100,10 +102,30 @@ pipeline {
       }
     }
 
-    stage('deploy to dev') {
-      steps {
-        input(id: 'deploy-to-dev', message: 'deploy to dev?')
-        kubernetesDeploy(configs: 'deploy/dev-ol/**', enableConfigSubstitution: true, kubeconfigId: "$KUBECONFIG_CREDENTIAL_ID")
+    stage('default-3') {
+      parallel {
+        stage('部署backend to dev') {
+          agent none
+          steps {
+            input(id: 'deploy-to-dev', message: 'deploy to dev?')
+            kubernetesDeploy(configs: 'BackEnd/deploy/**', enableConfigSubstitution: true, kubeconfigId: 'demo-kubeconfig')
+          }
+        }
+
+        stage('部署frontend to dev') {
+          agent none
+          steps {
+            kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, kubeconfigId: 'demo-kubeconfig', configs: 'FrontEnd/deploy/**')
+          }
+        }
+
+        stage('部署gateway to dev') {
+          agent none
+          steps {
+            kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, kubeconfigId: 'demo-kubeconfig', configs: 'GateWay/deploy/**')
+          }
+        }
+
       }
     }
 
